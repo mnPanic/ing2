@@ -271,7 +271,28 @@ El siguiente es un artículo de divulgación que profundiza en los efectos de DS
 
 https://patricegodefroid.github.io/public_psfiles/cacm2012.pdf
 
+Interesante conclusión
+
+> Which is best in practice—blackbox or whitebox fuzzing? Both offer differ- ent
+cost/precision trade-offs. Blackbox is simple, lightweight, easy, and fast but
+can yield limited code coverage. White- box is smarter but more complex. Which
+approach is more effective at ﬁnding bugs? It depends. If an applica- tion has
+never been fuzzed, any form of fuzzing is likely to ﬁnd bugs, and simple
+blackbox fuzzing is a good start. Once the low-hanging bugs are gone, however,
+fuzzing for the next bugs has to become smarter. Then it is time to use whitebox
+fuzzing and/or user-pro- vided guidance, for example, using an input grammar.
+>
+> The bottom line? In practice, use
+both. We do at Microsoft.
+
 ## Dudas de la lección
 
 - Cómo funcionan los solvers? Los vamos a ver?
+  
+  Posibles respuestas
+
+  - [Wikipedia - Satisfiability modulo
+    theories (SMT)](https://en.wikipedia.org/wiki/Satisfiability_modulo_theories)
+  - SAGE usa Z3, hecho en microsoft.
+
 - Por qué es mejor tener falsos negativos que no tener falsos positivos?
