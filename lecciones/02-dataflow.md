@@ -128,9 +128,10 @@ label `n` a cada nodo en el CFG. Para cada uno, usamos
   Las facts son las que estaban de antes, menos las que sobreescriben (porque ya
   no estarían reaching) + las que genera.
 
-    ![](img/2/reaching-op2.png)
+  ![](img/2/reaching-op2.png)
 
-    > Pensamiento: que poco práctico que haya que hacer eso con el KILL para que funcione el formalismo, no? Y no debería ser m < n?
+  > Pensamiento: que poco práctico que haya que hacer eso con el KILL para que
+  > funcione el formalismo, no? Y no debería ser m < n?
 
 #### Algoritmo - Chaotic iteration
 
