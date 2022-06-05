@@ -1,3 +1,7 @@
 # Bisimulación
 
-TODO
+## Equivalencias entre LTS
+
+## Juego de Bisimulación Fuerte
+
+## Bisimulación Débil
