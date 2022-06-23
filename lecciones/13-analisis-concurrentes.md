@@ -18,6 +18,30 @@ Videos
 - [Parte 3: Observadores y Safety](https://youtu.be/1Ay0a8wvPmo)
 - [Parte 4: Liveness, Progreso y Fairness](https://youtu.be/N4xfqOl2qUU)
 
+- [Análisis de sistemas concurrentes](#análisis-de-sistemas-concurrentes)
+  - [Análisis de modelos formales](#análisis-de-modelos-formales)
+    - [Validación](#validación)
+    - [Verificación](#verificación)
+  - [Deadlock analysis](#deadlock-analysis)
+    - [Algoritmo naive](#algoritmo-naive)
+    - [Explosión de estados](#explosión-de-estados)
+    - [Soluciones de deadlocks](#soluciones-de-deadlocks)
+  - [Exclusión mutua](#exclusión-mutua)
+    - [Ejemplo de problema con exclusión mutua](#ejemplo-de-problema-con-exclusión-mutua)
+    - [Estados de error](#estados-de-error)
+    - [Tests](#tests)
+    - [Observadores de propiedades](#observadores-de-propiedades)
+  - [Tipos de propiedades](#tipos-de-propiedades)
+    - [Composicionalidad de safety](#composicionalidad-de-safety)
+  - [Liveness - Progreso](#liveness---progreso)
+    - [Fair choice](#fair-choice)
+    - [Análisis de progreso](#análisis-de-progreso)
+    - [Ejemplo - Controlador de un puente de un solo carril](#ejemplo---controlador-de-un-puente-de-un-solo-carril)
+    - [Prioridad de acciones (Action priority)](#prioridad-de-acciones-action-priority)
+    - [Solución puente (Puente 2.0)](#solución-puente-puente-20)
+    - [Composicionalidad de liveness](#composicionalidad-de-liveness)
+  - [Bib](#bib)
+
 ## Análisis de modelos formales
 
 Hay dos tipos de procesos

@@ -3,6 +3,16 @@
 LTL es una lógica modal en particular, que nos va a servir para escribir
 propiedades a cumplir por los modelos que describimos con FSP.
 
+- [Lección 14 - Lógica Lineal Temporal](#lección-14---lógica-lineal-temporal)
+  - [Lógicas modales](#lógicas-modales)
+    - [Semántica](#semántica)
+    - [Ejemplos](#ejemplos)
+    - [Uso en verificación de programas](#uso-en-verificación-de-programas)
+  - [Lógicas temporales](#lógicas-temporales)
+    - [Ejemplos de verificación de programas](#ejemplos-de-verificación-de-programas)
+    - [LTL y LTS](#ltl-y-lts)
+    - [Ejemplo](#ejemplo)
+
 ## Lógicas modales
 
 Estudia la formalización del razonamiento que involucra modalidades como

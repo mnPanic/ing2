@@ -14,6 +14,16 @@ escribir una fórmula que la distinga.
 
 LTL **no tiene la capacidad de distinguir no determinismo**
 
+- [Lección 16 - Model checking CTL](#lección-16---model-checking-ctl)
+  - [Árbol de cómputo](#árbol-de-cómputo)
+  - [CTL (Computational Tree Logic)](#ctl-computational-tree-logic)
+    - [Semántica](#semántica)
+    - [Ejemplos de operadores combinados](#ejemplos-de-operadores-combinados)
+    - [CTL > LTL](#ctl--ltl)
+    - [LTL > CTL?](#ltl--ctl)
+    - [Base de CTL](#base-de-ctl)
+  - [Algoritmo de model checking](#algoritmo-de-model-checking)
+
 ## Árbol de cómputo
 
 En vez de mirar los caminos, vamos a pensarlo como que representa un árbol de
