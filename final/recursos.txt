@@ -1,1 +1,2 @@
 - http://www.pl-enthusiast.net/2017/10/23/what-is-soundness-in-static-analysis/
+- Cuestionarios 2da parte: https://docs.google.com/presentation/d/1uP1AR48TdXhH4SXh9iQ_SOUyEMgAj_SGRXe00RUP-6Q/edit#slide=id.p

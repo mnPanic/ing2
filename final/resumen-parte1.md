@@ -8,6 +8,10 @@
     - [Esquema](#esquema)
     - [Algoritmo: Chaotic iteration](#algoritmo-chaotic-iteration)
   - [Pointer analysis](#pointer-analysis)
+- [Testing automatizado](#testing-automatizado)
+  - [Terminología](#terminología)
+  - [Mutation testing](#mutation-testing)
+  - [Órdenes de mutación](#órdenes-de-mutación)
 
 ## Tipos de análisis
 
@@ -298,3 +302,300 @@ correspondiente a él hasta que el grafo no cambie.
 Una vez que está construido el points-to-graph, decimos que dos variables
 may-alias si apuntan al mismo allocation site. Si no lo hacen, estamos seguros
 de que no son alias.
+
+## Testing automatizado
+
+- Tipos de tests
+  - Caja blanca
+  - Caja negra
+  - Manual
+  - Automatizado
+- Pre y post condiciones
+- Coverage
+
+### Terminología
+
+1. Un programador crea un **defecto** en el código
+2. Cuando es ejecutado, se genera una **infección**
+3. La infección se *propaga*
+4. Hasta ser observable, momento en el cual se convierte en una
+   **falla**
+
+Donde,
+
+- **Error**: desviación de lo esperado o correcto
+- **Defecto**: Error en el código, que puede crear una infección que conduce a
+  una falla
+
+  > pero no siempre la ejecución de un código defectuoso lleva a una infección
+
+- **Infección**: Un error en el estado del programa que puede conducir a una
+  falla
+
+  > Pero no siempre una infección se propaga hasta ser visible
+
+- **Falla**: un error *externamente visible* en el comportamiento del programa
+
+### Mutation testing
+
+- Vamos a juzgar la efectividad de un test suite midiendo que tan bien puede
+  encontrar defectos *artificiales*. Los **mutantes** van a ser una versión
+  levemente modificada del programa original, que tienen cambios simples
+  (emulando typos) que sean sintácticamente válidos.
+
+  Por ejemplo,
+
+  ```diff
+  int foo(int x, int y) {
+    if (x < y)
+  -    return x + y
+  +    return x - y // mutante
+    return x * y
+  }
+  ```
+
+- Se van a generar con **operadores de mutación** que dicen qué es lo que hay
+  que cambiar. Son reglas para derivar mutantes a partir de un programa.
+
+- Decimos que un mutante está **muerto** si hubo un test que lo detectó (i.e
+  pasa para el programa y falla para el mutante o al revés) y **vivo** si no.
+
+  Si hay un mutante vivo, es porque hacen falta más tests.
+
+- Mutation score = #muertos / #total
+
+  (con #total = #muertos + #vivos)
+
+#### Órdenes de mutación
+
+- **FOM** (First Order Mutant)
+
+  - Tiene exactamente una mutación
+  - Cada mutación define un conjunto de FOMs
+  - #FOM = # referencias a datos $\times$ # referencias a objetos
+
+- **HOM** (Higher Order Mutant)
+  - Es una mutación de otra mutación
+  - #HOM = $2^{\#FOM} - 1$
+
+#### Mutantes equivalentes
+
+Como las mutaciones son cambios *sintácticos*, no necesariamente alteran la
+**semántica** del programa. Pueden ser alcanzados y que no se infecte el estado
+del programa, o producir una infección sin propagación.
+
+Por ejemplo
+
+```diff
+if (x > 0) {
+- if (y > x) {
++ if (y > abs(x)) {
+    ...
+  }
+}
+```
+
+pero como en el branch true x > 0, abs(x) = x y ambos programas son
+equivalentes. No vamos a poder matar al mutante.
+
+#### Mejoras en performance
+
+Hay muchos mutantes, y hay que correr todos los tests para cada uno, lo cual
+puede ser muy lento. Se puede optimizar en diferentes aspectos
+
+- Fewer
+  - Sampling de mutantes: no ejecutar todos
+  - Mutación selectiva: usar un subconjunto de operadores
+
+    Hago estudios empíricos, me quedo con el minimo cjto de operadores de
+    mutación que sea equivalente al de todos.
+
+    Un estudio dice que es ABS, AOR, COR, ROR, UOI.
+
+- Smarter
+  - Paralelización
+  - Mutación débil: ver afectación en el estado del programa en vez de esperar
+    a que sea observable. (fuerte: que mute hasta una falla observable)
+  - Uso de coverage: solo ejecutar los tests que pasen por la línea modificada.
+  - Impacto
+- Faster
+  - Mutar bytecode directamente (evita compilar para cada mutante)
+  - Meta-mutantes: en lugar de generar distintas versiones del mismo programa,
+    generar una única versión distinta que contenga todos los cambios. Y con
+    alguna configuración elegir qué mutante usamos, por ej. con un switch. (te
+    ahorrás compilación)
+
+### Fuzzing
+
+Random testing (fuzzing) tiene como idea darle inputs random a un programa, y
+ver si se comporta "correctamente". Es un caso particular de mutation analysis.
+
+Es un *paradigma* y no algo que usamos out of the box. La generación de inputs
+va a depender de cada programa, y se puede especificar por ejemplo con
+gramáticas.
+
+Toma como premisa el **infinite monkey theorem**,
+
+> "A monkey hitting keys at random on a typewriter keyboard will produce any
+> given text, such as the complete works of Shakespare, with probability
+> approaching 1 as time increases".
+
+El monkey es un fuzz testing tool, y un texto es encontrar un input que expone
+un bug en el programa siendo testeado.
+
+#### Herramientas reales
+
+- **Monkey tool**: de google para fuzzing en android. Genera una secuencia de
+  eventos, puede generar gestos.
+
+- **Cuzz**: De microsoft para apps multithread
+  - En los programas concurrentes los bugs se trigerrean con schedules
+    particulares de los threads, que no es determinístico.
+  - Para forzar un schedule, se introducen automáticamente delays random entre
+    instrucciones (`sleep`s)
+  
+  - **Bug depth** = el número de *ordering constraints* (cuantos threads tienen
+    que correr en cierto orden) que un schedule tiene que satisfacer para
+    encontrar bug.
+
+    Ejemplos
+
+    ```text
+    // thread 1
+    t = new T();
+
+    // thread 2
+    t.state == 1
+    ```
+
+    como hay un solo constraint, depth 1
+
+    ```text
+       // thread 1
+    1: p = null;
+
+       // thread 2
+    1: if (p != null) {
+    2:   p.close();
+       }
+    ```
+
+    bug depth 2 (porque 2.1 antes de 1.1 y 2.2 después de 1.1).
+
+  - típicamente tienen poco depth los bugs. "small test case hyphotesis": si hay
+    un bug, hay un test chiquito que lo encuentra.
+
+#### Pros y cons
+
+Pros
+
+- Fácil de implementar
+- Se puede probar que tiene buen cubrimiento con suficientes tests
+- Puede funcionar con programas de cualquier formato
+- Está bueno para vulns de seguridad (encuentra cosas raras que los testers
+  humanos no encuentran)
+
+Cons
+
+- Test suite ineficiente (test bloat)
+- Puede encontrar bugs que no son tan importantes (tal vez side effects
+  benignos)
+- Mala cobertura
+
+### Generación automática de tests
+
+#### Korat (Systematic testing)
+
+Usa los tipos para generar los tests, por lo tanto es **whitebox**.
+
+Para poder explorar todas las posibles formas de un tipo sistemáticamente, vamos
+a representar estructuras como vectores ordenando los campos de un struct. De
+esa manera, cada *forma* de un tipo es un vector de valores de los campos.
+
+Y como enumeramos los vectores?
+
+Algoritmo naive:
+
+- Se selecciona un tamaño máximo K
+- Se generan todos los posibles inputs hasta tamaño K
+- Se descartan los que no cumplen la precond
+- Corre el programa en los que quedan
+- Valida los resultados usando la post cond
+
+Problemas:
+
+- Es ineficiente generar inputs y después chequear la pre condición, sería mejor
+  generar inputs válidos de una.
+
+En Korat, se *instrumenta* la precondición (func `repOK`) para ver qué campos
+accede. Y se van enumerando en ese orden. Itera el último campo visitado por la
+pre condición. Cuando se terminan las posibilidades, hace backtracking.
+
+Evita **isomorfismos** permitiendo a lo sumo incrementos de 1 en la numeración
+del vector.
+
+Por ejemplo, `repOK` de un árbol binario (usa BFS)
+
+```text
+public boolean repOK(BinaryTree bt) {
+  if (bt.root == null) return true;
+  Set visited = new HashSet();
+  List workList = new LinkedList();
+  visited.add(bt.root);
+  workList.add(bt.root);
+  while (!workList.isEmpty()) {
+    Node current = workList.removeFirst();
+    if (current.left != null) {
+      if (!visited.add(current.left)) return false;
+      workList.add(current.left);
+    } 
+    if (current.right !=null) {
+      if (!visited.add(current.right)) return false;
+      workList.add(current.right);
+    } 
+  } 
+  return true;
+}
+```
+
+Pros y cons
+
+- Es bueno cuando podemos enumerar todas las posibilidades: estructuras con
+  procedimientos simples y en unit testing
+- Es débil cuando no se puede enumerar todo, por ej. con enteros floats o
+  strings. (DSE para esto)
+- Es tan bueno con las pre y post conds.
+
+#### Randoop (Feedback directed random testing)
+
+> RANDom tester for Object Oriented Programs
+
+Idea: Crear de forma **aleatoria** un nuevo test, **guiado por el feedback** de
+tests creados previamente. Un test es una secuencia de method calls.
+
+Receta
+
+- Crea nuevas secuencias incrementalmente, extendiendo las previas.
+- Ni bien se crea una, se ejecuta
+- Usa el resultado para guiar la generación hacia secuencias que creen nuevos
+  estados de los objetos.
+
+Inputs: clases a testear, límite de tiempo, conjunto de constraints (o
+assertions)
+
+Output: tests que violan las constraints, con estructura
+
+```text
+<secuencia de llamados a input classes que arman el estado>
+<contrato stated as assertion>
+```
+
+Para que sea valido,
+
+- No se deberia violar un contrato durante la ejecucion (secuencias
+  **ilegales**)
+- La assertion del final debería fallar al ser ejecutada.
+
+Para clasificar cada secuencia que se genera,
+
+![](../lecciones/img/6/randoop-classif.png)
