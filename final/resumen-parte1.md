@@ -11,7 +11,21 @@
 - [Testing automatizado](#testing-automatizado)
   - [Terminología](#terminología)
   - [Mutation testing](#mutation-testing)
-  - [Órdenes de mutación](#órdenes-de-mutación)
+    - [Órdenes de mutación](#órdenes-de-mutación)
+    - [Mutantes equivalentes](#mutantes-equivalentes)
+    - [Mejoras en performance](#mejoras-en-performance)
+  - [Fuzzing](#fuzzing)
+    - [Herramientas reales](#herramientas-reales)
+    - [Pros y cons](#pros-y-cons)
+  - [Generación automática de tests](#generación-automática-de-tests)
+    - [Korat (Systematic testing)](#korat-systematic-testing)
+    - [Randoop (Feedback directed random testing)](#randoop-feedback-directed-random-testing)
+- [DSE](#dse)
+  - [Computation trees](#computation-trees)
+  - [Symbolic execution](#symbolic-execution)
+  - [Constraint solvers](#constraint-solvers)
+  - [Dynamic Symbolic Execution (DSE)](#dynamic-symbolic-execution-dse)
+  - [Comparación](#comparación)
 
 ## Tipos de análisis
 
@@ -599,3 +613,126 @@ Para que sea valido,
 Para clasificar cada secuencia que se genera,
 
 ![](../lecciones/img/6/randoop-classif.png)
+
+## DSE
+
+Es una técnica híbrida que combina static y dynamic analysis.
+
+### Computation trees
+
+- Es una forma de ver a los programas como árboles binarios de profundidad
+  potencialmente infinita (si hay loops).
+- Cada nodo es un condicional
+  - arista izquierda rama false
+  - derecha la rama true.
+- Cada camino representa una **clase de equivalencia** de inputs.
+
+La idea entonces va a ser generar sistemáticamente inputs no equivalentes.
+
+![](../lecciones/img/7/comp-tree-ex.png)
+
+### Symbolic execution
+
+- Los inputs se representan con *símbolos* en vez de valores concretos.
+- El programa se ejecuta **simbólicamente**, guardando *path constraints* simbólicas.
+- Se usa un **constraint solver** (a.k.a theorem prover) para ver si hay valores
+  que satisfacen cada branch condition.
+
+Pero tiene varios problemas,
+
+- No escala para programas grandes, porque son muchas condiciones.
+- Si la pregunta a responder es demasiado difícil para el constraint solver, se
+  toma un approach *sound* y se asume que se puede satisfacer, llevando
+  poitencialmente a falsos positivos (ya que tal vez no era satisfacible)
+
+### Constraint solvers
+
+Le das como argumento una fórmula en algún lenguaje, y da como output
+
+- SAT y con que input
+- UNSAT
+- No se (sat es indecidible para LPO por ej.)
+
+### Dynamic Symbolic Execution (DSE)
+
+Es una combinación de dos approaches para tener las ventajas de ambos: concrete
+execution de random testing con symbolic execution.
+
+- Arranca con inputs random y observa los branches tomados
+- Ejecuta el programa **concretamente** y **dinámicamente**
+- Todo se define en función de las variables de entrada, no importan las locales
+  que sean definidas en el medio.
+- Cuando llega al fin del cómputo, hace backtracking hasta algún branch point y
+  decide si es SAT el otro branch (la negación) con un SAT solver.
+  - Si es SAT, el solver genera una asignación, y sino se ignora.
+  - Si una cond es compleja para el solver, las **simplifica** reemplazando
+    valores simbólicos por concretos.
+
+    Esto hace que sea un **incomplete solver**: nunca declara UNSAT como SAT,
+    pero puede fallar en marcar como SAT algo que en realidad lo es. (marca SAT
+    como UNSAT).
+- Luego se vuelve a ejecutar con los valores concretos y se repite el proceso de
+  negación.
+
+> Ejemplo de DSE en el cuaderno
+
+Trackea 3 piezas de información
+
+- Concrete state: Lo usa para simplificar la parte de resolución de constraints
+  de análisis estático
+
+- Symbolic state: Lo usa para guiar el análisis dinámico a seleccionar inputs
+  concretos no redundantes.
+
+- Path condition (constraints simbólicas que le pasa al solver)
+
+Además, DSE no tiene garantizado terminar si hay input-dependent loops. se puede
+modificar DSE para que termine después de explorar una cantidad finita de
+caminos del computation tree.
+
+### Comparación
+
+> En DSE "se puede probar" = "no tira una alerta" (no dice nada)
+>
+> sound:
+>
+> - se puede probar => es verdad
+> - no tira una alerta => no hay falla
+> - falla => tira una alerta
+> - (no hay falsos negativos)
+>
+> complete:
+>
+> - es verdad => se puede probar
+> - no hay falla => no tira una alerta
+> - tira una alerta => falla
+> - (no hay falsos positivos)
+
+Cuando las restricciones son muy complejas para ser manejadas por el demostrador
+de teoremas, DSE "simplifica" las restricciones enviadas al demostrador
+reemplazando un valor simbólico con un valor concreto. Esto produce
+
+- Las restricciones simplificadas son un subconjunto de las soluciones para
+  recorrer ese camino, por lo tanto, un resultado de insatisfabilidad (UNSAT) no
+  es concluyente, ya que no se analizó todo el espacio de búsqueda.
+
+- Reduce el espacio de búsqueda de soluciones del demostrador de teoremas, lo
+  que le permite en algunos casos encontrar soluciones que de otra manera no
+  podría.
+
+- El uso de restricciones simplificadas introduce unsoundness, ya que DSE puede
+  producir falsos negativos (i.e. no reportar que se puede producir un error
+  cuando existe un input concreto que puede alcanzar ese error)
+
+Diferencia entre DSE y SE, parecida a diferencia entre static analysis y dynamic
+analysis.
+
+- DSE nunca modela un run del código que no podría pasar, entonces no hay
+  falsos positivos (es complete). Pero puede perderse casos, entonces hay falsos
+  negativos (no es sound).
+
+- SE siempre toma branches que no está seguro de si se pueden alcanzar, entonces
+  puede modelar corridas del programa que sean imposibles: no hay falsos
+  negativos (nunca determina incorrectamente que un programa no tiene errores,
+  es sound) pero hay falsos positivos (retorna errores espúreos, es incomplete)
+
