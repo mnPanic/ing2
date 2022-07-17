@@ -17,6 +17,8 @@
   - [Fuzzing](#fuzzing)
     - [Herramientas reales](#herramientas-reales)
     - [Pros y cons](#pros-y-cons)
+    - [Graybox fuzzing](#graybox-fuzzing)
+    - [Gramáticas](#gramáticas)
   - [Generación automática de tests](#generación-automática-de-tests)
     - [Korat (Systematic testing)](#korat-systematic-testing)
     - [Randoop (Feedback directed random testing)](#randoop-feedback-directed-random-testing)
@@ -26,6 +28,14 @@
   - [Constraint solvers](#constraint-solvers)
   - [Dynamic Symbolic Execution (DSE)](#dynamic-symbolic-execution-dse)
   - [Comparación](#comparación)
+  - [Unrolls](#unrolls)
+- [SBT](#sbt)
+  - [Hill climber](#hill-climber)
+  - [Tabú search](#tabú-search)
+  - [Algoritmos evolutivos](#algoritmos-evolutivos)
+    - [Dominadores](#dominadores)
+    - [Función de fitness](#función-de-fitness)
+    - [Testability transformation](#testability-transformation)
 
 ## Tipos de análisis
 
@@ -516,6 +526,43 @@ Cons
   benignos)
 - Mala cobertura
 
+#### Graybox fuzzing
+
+En fuzzing casi siempre partimos de un **seed**, que es un conjunto inicial de
+inputs que son fuzzeados o modificados. (no confundir con seeds aleatorias que
+son números enteros)
+
+- **Blackbox fuzzing**: partimos de un seed, y se elige cada seed para aplicar
+  una cantidad aleatoria de mutaciones hasta K (insert char, flip bit, etc.)
+- **Greybox fuzzing**: mezcla entre whitebox y blackbox
+  - Se fija si un input aportó cobertura, y en ese caso lo agrego al corpus de
+    inputs para futuras mutaciones.
+  - Para eso es necesario medir la coverage del programa.
+  - Todos los inputs tienen la misma probabilidad de ser elegidos. Como se van
+    agregando inputs, esto hace que cada vez haya menos probabilidad.
+- **Boosted greybox fuzzing**
+  - El normal tiene el problema de que cuando agrego un input al seed,
+    decremento la probabilidad de elegir cada uno.
+  - La idea de boosted es que aumento la proba de elegir un input según las
+    chances de descubrir otros caminos en el CFG.
+  - Quiero elegir un input si ejercitó un camino que antes no se había
+    ejercitado. Cada elemento del seed posee una **energía**, que es la proba de
+    elegirlo, que se define como
+
+    $$e(s) = \frac{1}{f(p(s))^a}$$
+
+    donde
+
+    - $p(s)$ es el camino que recorrió la ejecución de s
+    - $f(p(s))$ es la frecuencia de apariciones de un camino en el test suite.
+    - $a$ es un exponente que se usa para controlar cuanto *decae* el valor de
+      los caminos ya recorrido. Cuanto mayor es, más decae.
+
+#### Gramáticas
+
+Si los inputs del programa tienen cierta estructura, se pueden generar
+respetándola usando gramáticas.
+
 ### Generación automática de tests
 
 #### Korat (Systematic testing)
@@ -631,6 +678,19 @@ La idea entonces va a ser generar sistemáticamente inputs no equivalentes.
 
 ![](../lecciones/img/7/comp-tree-ex.png)
 
+Sacado de lección: diferencias entre CFG y CT:
+
+- En el control-flow graph una sentencia es representada por un único nodo
+  mientras que en el árbol de cómputo la misma sentencia puede aparecer en
+  distintos nodos del árbol.
+- En el control-flow graph todas las sentencias se representan con un nodo
+  (independientemente si son de bifurcación o no), mientras que en el árbol de
+  cómputo únicamente las sentencias de bifurcación se representan con nodos.
+- El control-flow graph puede tener ciclos mientras que el árbol de cómputo no
+  posee ciclos.
+- Un nodo en el control-flow graph puede tener muchos predecesores mientras que
+  un nodo en el árbol de cómputo siempre tiene un único predecesor.
+
 ### Symbolic execution
 
 - Los inputs se representan con *símbolos* en vez de valores concretos.
@@ -736,3 +796,228 @@ analysis.
   negativos (nunca determina incorrectamente que un programa no tiene errores,
   es sound) pero hay falsos positivos (retorna errores espúreos, es incomplete)
 
+### Unrolls
+
+Se pueden hacer unrolls para que los árboles de cómputo infinitos sean finitos,
+ya que sino ni SE ni DSE terminarían.
+
+Tiene efecto de,
+
+- SE: Asegura terminación pero introduce "unsoundness", ya que puede existir un
+  estado de error alcanzable con K+1 unrolls pero como se efectuaron únicamente
+  K unrolls el algoritmo no lo puede alcanzar.
+
+## SBT
+
+Random testing es una búsqueda casi no guiada, y se suele usar como punto de
+comparación para las técnicas sistemáticas. Es barata y suele funcionar
+decentemente bien.
+
+Limitaciones:
+
+- Random testing: dificultad para generar inputs que alcancen código poco
+  probable (tienen dist uniforme)
+- DSE (concolic testing): tamaño de las path conditions para programas grandes,
+  capacidad del constraint solver.
+
+Alternativa: tratar la búsqueda del espacio de inputs como un problema de
+optimización combinatoria. Podemos aplicar **algoritmos de búsqueda
+meta-heurísticos**. Estos no van a encontrar la mejor sol, pero encuentran una
+suficientemente buena en una cantidad razonable de tiempo.
+
+### Hill climber
+
+Si tengo una función objetivo que me dice para cada input un score (o fitness),
+puedo intentar de explorar el espacio para llegar a máximos locales.
+
+Idea:
+
+1. Definir una noción de **cercanía** del input con respecto al goal que
+   queremos alcanzar
+2. Por cada nueva sol, explorar la vecindad de todas las soluciones
+3. Elegir la vecina que sea mejor que la actual
+4. Repetir hasta no encontrar mejores
+
+Pseudocódigo
+
+```text
+Elijo de forma random una primera sol
+
+while (no alcancé el goal)
+  Busco entre los vecinos
+  Si existe un vecino que es mejor
+    Actualizo la nueva posición
+  Si no
+    Termino la búsqueda
+```
+
+Problema: puede llegar a caer en un máximo local
+
+![](../lecciones/img/10/hill-local-max.png)
+
+### Tabú search
+
+### Algoritmos evolutivos
+
+> Cuando el vecindario es demasiado grande (por ej. tridimencional), hill
+> cimbing se torna muy lento. Necesitamos algo mejor
+
+- Gen: unidad de info pasada de generación en generación
+- Selección natural
+
+Pasos
+
+1. inicializar población
+2. evaluar población con función de fitness (que tan apto está para el ambiente)
+3. while no termine
+   1. seleccionar padres
+   2. crear nuevos individuos, hijos, generando una población.
+4. volver a 2
+5. Retornar el mejor individuo de la población
+
+Cuestiones a resolver:
+
+- Como representamos la población? Como la generamos?
+
+  En el ejemplo pueden ser ternas
+
+  ![](img/10/gen-repr.png)
+
+  Para generarla,
+
+  - Aleatoriamente
+  - Usar sol existentes
+  - Usar un test suite con cobertura de un criterio de menor potencia
+  - Manualmente
+
+- Que función de fitness usamos? Como la evaluamos?
+  - La func de fitness responde si un individuo es mejor que otro.
+  - Determina el espacio de búsqueda o *fitness landscape*
+
+  Cómo sabemos que tan cerca está un input de cumplir con un predicado? Podemos
+  usar *branch distance*
+
+  ```text
+  # Branch distance
+  a == b    abs(a - b)
+  a < b     a < b? 0: (a-b) + k
+  a =< b    a =< b? 0: (a-b)
+  a > b     a > b ? 0 :(b-a) + K
+  a >= b    a >= n ? 0 : (b-a)
+
+  o.m(v1, ..., vn)  true? 0: K
+  a != b            a != b? 0: K
+  A && B            dist(A) + dist(B)
+  A || B            min(dist(A), dist(B))
+  !a                usar de morgan
+  ```
+
+- Cual es mi condición de parada?
+  - Tiempo máximo
+  - Cant máxima de iteraciones
+  - Cant máxima de evals de la func de fitness
+- Que func uso para seleccionar padres?
+
+  - **Roulette wheel selection**: la proba de elegir un individuo es
+    proporcional al valor de su función de fitness.
+    - Problema: aumenta excesivamente la proba de elegir los que sean bien
+      rankeados.
+  
+  - **Rank selection**: Rankear individuos de acuerdo a su fitness. Esto hace
+    que no haya diferencia si el individuo con mayor fitness es 10 veces mejor
+    que el segundo o solo 0.0001% mejor. Es el preferible en la práctica
+
+  - **Tournament selection**. Tenemos un torneo de tamaño N, selecciono N
+    aleatoriamente y el mejor es seleccionado. El tamaño define la presión
+    selectiva.
+
+    Nos permite que un individuo con mala fitness aún puede ganar con cierta
+    probabilidad (el peor sería elegido con sí mismo)
+
+- Como creo hijos? Cross over, operadores de mutación?
+
+  Combinar individuos: hacer *crossover*
+  
+  - Single point crossover: elegir un único punto en los padres y dividir o unir
+   ese punto.
+  - Two point crossover: dos puntos
+  - Fixed vs variable length
+  - Uniform crossover
+
+  ![](img/10/crossover.png)
+
+  Además se pueden aplicar pequeñas mutaciones
+
+#### Dominadores
+
+Una limitación de branch distance es que no tiene en cuenta condiciones
+anidadas. Para esto necesitamos dominadores.
+
+Decimos que un nodo A **domina** al nodo B si todo camino hacia B debe pasar por
+A. Un dominador inmediato es el más cercano en todo el camino desde la raíz (y
+la raíz no tiene)
+
+Análogamente, decimos que B **post-domina** a un nodo A si todos los caminos
+desde A a la salida tienen que pasar por B. Son dominadores vistos en reversa.
+
+![](img/10/dominator-ec.png)
+
+(izq domina der post dom)
+
+Decimos que B es **control-dependiente** de A si
+
+- A domina a B
+- B no post domina a A
+- A tiene al menos dos sucesores (A es una decisión)
+- B post domina a un sucesor de A
+
+![](img/10/control-dependent.png)
+
+Con esto podemos armar un **Control dependency graph** (CDG) que es otra
+representación de la ejecución de un programa que nos va a permitir definir la
+distancia de una mejor manera.
+
+#### Función de fitness
+
+Función de fitness = Nodos dependientes - ejecutados
+
+- dependientes: cantidad de nodos del CDG para el target. (ancestros del target)
+- ejecutados: numero de control dependent que fueron ejecutados (ancestros)
+
+Para armarla, necesitamos que la fitness func combine
+
+- approach level (cuan cerca estoy del predicado)
+- branch distance (cual cerca estoy de ejercitar el branch)
+
+![](img/10/ff-ej1.png)
+![](img/10/ff-ej2.png)
+![](img/10/ff-ej3.png)
+
+> Está teniendo en cuenta el branch distance de todos los nodos del CDG?
+
+#### Testability transformation
+
+Si tenemos un programa que genera una función de fitness muy dura, puede ser
+complicado hacer la búsqueda. En ese caso se puede transformar un programa a
+otro con semántica equivalente que tenga una func de fitness más amigable. Es
+solamente usado para generar datos de test y luego **descartado**.
+
+![](img/10/flag-problem.png)
+
+- Flag level 1: no se modifica la variable, se puede reemplazar con una
+  constante
+- Level 2: se modifica la variable entre la def y el if. Ahí introducimos
+  variables temporales (transformando en level 1) y luego reemplazamos.
+- Level 3: la bandera misma se va modificando
+- Level 4: Secuencia de flags con condicionales
+- Level 5: Definición de flags en diferentes loop bodies
+
+Acá cuenta un poco como mejorar ciertas expresiones para que puedan ser
+aplicables a branch distance, como list.isEmpty por list.size == 0.
+
+para comparar strings,
+
+- Distancia de hamming. Mala para por ej. "hello world" y "ello world" (todos
+  chars distintos)
+- Distancia de Levenshtein: min cant de ediciones de un único caracter que se
+  necesitan para que sean iguales.
