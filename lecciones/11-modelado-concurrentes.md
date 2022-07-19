@@ -95,7 +95,7 @@ Este no es el único enfoque posible:
 
 - Concurrencia: varios procesos que de forma lógica están ejecutando en
   simultáneo, pero no necesariamente sobre dtos procesadores. Hay una ejecución
-  *interleaved* (entrelazada) en donde los threads comparten un mismo proceasdor
+  *interleaved* (entrelazada) en donde los threads comparten un mismo procesador
   recibiendo slots de tiempo y simular una ejecución paralela.
 
   ![](img/11/interleaving.png)
@@ -487,9 +487,9 @@ entonces x no puede ser elegida.
 
 `a:P` prefija cada acción en el alfabeto de P con a.
 
-Intuición: queremos repetir la definición de un proceso del mismo proceso para
-tener distintas instancias. Pero si compongo dos veces lo mismo, como tienen la
-misma etiqueta están sincronizando permanentemente. Pero queremos distinguirlos
+Intuición: queremos repetir la definición del mismo proceso para tener distintas
+instancias. Pero si compongo dos veces lo mismo, como tienen la misma etiqueta
+están sincronizando permanentemente, y queremos distinguirlos.
 
 ![](img/11/sugar-etiquetado.png)
 
