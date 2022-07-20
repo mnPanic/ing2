@@ -881,7 +881,7 @@ Cuestiones a resolver:
 
   En el ejemplo pueden ser ternas
 
-  ![](img/10/gen-repr.png)
+  ![](../lecciones/img/10/gen-repr.png)
 
   Para generarla,
 
@@ -944,7 +944,7 @@ Cuestiones a resolver:
   - Fixed vs variable length
   - Uniform crossover
 
-  ![](img/10/crossover.png)
+  ![](../lecciones/img/10/crossover.png)
 
   Además se pueden aplicar pequeñas mutaciones
 
@@ -960,7 +960,7 @@ la raíz no tiene)
 Análogamente, decimos que B **post-domina** a un nodo A si todos los caminos
 desde A a la salida tienen que pasar por B. Son dominadores vistos en reversa.
 
-![](img/10/dominator-ec.png)
+![](../lecciones/img/10/dominator-ec.png)
 
 (izq domina der post dom)
 
@@ -971,7 +971,7 @@ Decimos que B es **control-dependiente** de A si
 - A tiene al menos dos sucesores (A es una decisión)
 - B post domina a un sucesor de A
 
-![](img/10/control-dependent.png)
+![](../lecciones/img/10/control-dependent.png)
 
 Con esto podemos armar un **Control dependency graph** (CDG) que es otra
 representación de la ejecución de un programa que nos va a permitir definir la
@@ -989,9 +989,9 @@ Para armarla, necesitamos que la fitness func combine
 - approach level (cuan cerca estoy del predicado)
 - branch distance (cual cerca estoy de ejercitar el branch)
 
-![](img/10/ff-ej1.png)
-![](img/10/ff-ej2.png)
-![](img/10/ff-ej3.png)
+![](../lecciones/img/10/ff-ej1.png)
+![](../lecciones/img/10/ff-ej2.png)
+![](../lecciones/img/10/ff-ej3.png)
 
 > Está teniendo en cuenta el branch distance de todos los nodos del CDG?
 
@@ -1002,7 +1002,7 @@ complicado hacer la búsqueda. En ese caso se puede transformar un programa a
 otro con semántica equivalente que tenga una func de fitness más amigable. Es
 solamente usado para generar datos de test y luego **descartado**.
 
-![](img/10/flag-problem.png)
+![](../lecciones/img/10/flag-problem.png)
 
 - Flag level 1: no se modifica la variable, se puede reemplazar con una
   constante
