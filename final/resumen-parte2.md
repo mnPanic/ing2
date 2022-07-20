@@ -398,7 +398,6 @@ visitado infinitas veces, todas sus transiciones salientes también lo son.
 
 #### Análisis de progreso
 
-
 La idea es encontrar las componentes fuertemente conexas "terminales" o bottom
 de las que no se puede salir:
 
@@ -412,8 +411,174 @@ Component) todas las transiciones son inevitables.
 
 Puedo darle más prioridad o menso a ciertas acciones con sintaxis de FSP.
 
-
-
 ## LTL
 
+LTL es una lógica modal particular que nos va a servir para escribir propiedades
+que queremos que cumplan los sistemas concurrentes.
+
+Las lógicas modales se interpretan sobre estructuras de Kripke (W, R) donde W
+son los mundos y R es una relación sobre R. Tienen una función de valuación que
+para cada mundo y variable proposicional, asigna un valor de verdad. La
+semántica está dada por $\vDash$.
+
+En LTL, R es una relación total y W un conjunto numerable. La interpretación de
+los operadores modales es
+
+- `[] P`: Siempre en el futuro vale P
+- `<> P`: En algun momento en el futuro vale P
+
+Definimos su semántica en LTS cuanto a las trazas. Un estado lo vamos a pensar
+como una posición en una traza $\sigma$.
+
+- $\sigma[i] \vDash P \iff v(\sigma[i], p)$
+- $\sigma[i] \vDash X P \iff \sigma[i+1] \vDash P$
+- $\sigma[i] \vDash <> P \iff \exists j \geq i : \sigma[j] \vDash P$
+- $\sigma[i] \vDash [] P \iff \forall j \geq i, \sigma[j] \vDash P$
+- $\sigma[i] \vDash P\ U\ Q \text{ (until)} \iff \exists k \geq i : \sigma[k]
+  \vDash Q \wedge (\forall j : k > j \geq i, \sigma[j] \vDash P)$
+- $\sigma[i] \vDash P\ W\ Q \text{ (weak until)} \iff$ igual a until pero no
+  necesariamente vale Q, y puede valer siempre P.
+- $\sigma[i] \vDash P\ R\ Q \text{ (release)} \iff Q\ U\ (P \wedge Q) \text{ o } [] Q$
+
+y $\sigma \vDash P$ sii $\sigma[i] \vDash P$
+
+Luego, un modelo LTS satisface una fórmula P de LTL ($M \vDash P$) sii toda
+traza $\sigma$, $\sigma \vDash P$. Vamos a interpretar a cada traza como una
+estructura de kripke en la que una prop P es verdadera en el estado $i$ sii P es
+la accion en la pos $i$ de la traza $t$. Solo para acciones observables, y **hay
+una por estado**. 
+
+![](../lecciones/img/14/trazas-kripke.png)
+
+algunos ejemplos
+
+![](../lecciones/img/14/verif-exs-2.png)
+
+### Model checking LTL
+
+Algoritmo:
+
+Dado un LTS M y una fórmula en LTL P
+
+1. Convertimos !P en un buchi A_!P que caracteriza las trazas que violan la
+   propiedad.
+2. Convertimos M a un buchi A_M que caracteriza las trazas de M
+3. Hacemos el producto de los buchis
+4. Si L(A_!P x A_M) != vacio, entonces existe una traza de M que no cumple la
+   propiedad.
+
+#### Autómatas de buchi
+
+Son como los AF de tleng pero reconocen lenguajes w-regulares (omega regulares,
+como los regulares pero de cadenas infinitas). Acepta una cadena cuando su
+ejecución visita al menos un estado de aceptación infinitas veces.
+
+Los autómatas de buchi **generalizados** tienen un conjunto de conjuntos de
+aceptación, y una ejecución es aceptada si pasa por al menos un estado de
+aceptación *de cada conjunto* infinitas veces.
+
+#### LTL to buchi
+
+Es un algoritmo complicado. Primero se construye un gbuchi y luego se pasa de
+gbuchi a buchi.
+
+#### gbuchi to buchi
+
+Se duplica el buchi original para distintos *niveles*, uno por conjunto de
+aceptación. Subimos (% k) de nivel si salimos de un final, y los finales son los
+del 1er nivel.
+
+De esa forma, una cadena es aceptada por el buchi si pasa infinitas veces por un
+final, que sucede si y solo si pasamos por todos los niveles infinitas veces,
+con lo que estamos simulando la aceptación de un gbuchi.
+
+#### LTS to buchi
+
+la traducción lts a buchi es como sigue:
+
+![](../lecciones/img/15/lts2buchi.png)
+
+la noción de aceptación del lado del sistema del programa concurrente, son
+todas las trazas, no nos queremos perder de ninguna, y por eso el conj de
+aceptación de buchi son todos los estados.
+
+#### Producto de buchis
+
+El producto (composición paralela) de autómatas de buchi se computa como sigue
+
+![](../lecciones/img/15/prod-buchi.png)
+
+Y tenemos el siguiente lema sobre la comp paralela de ellos,
+
+![](../lecciones/img/15/lema-prod.png)
+
+#### Chequeo de vacuidad de un lenguaje
+
+Dado un buchi queremos verificar si el lenguaje que acepta es vacío.
+
+Un buchi acepta una palabra cuando existe una ejecución que visita un estado de
+aceptación infinitas veces.
+
+Algoritmo:
+
+1. Buscar un ciclo que contenga un estado de aceptación y sea alcanzable desde
+   estado inicial
+
+   Buscar una componente fuertemente conexa, alcanzable, que contenga un estado
+   de aceptación
+  
+2. Si no existe, el lenguaje que acepta el autómata es vacío.
+
+Hay dos algoritmos conocidos con complejidad O(n + m) para calcular componentes
+fuertemente conexas. Uno es Kosaraju (un poco más simple, vemos este) y el otro
+Tarjan.
+
 ## CTL
+
+LTL no distingue determinismo de no determinismo. Por ej.
+
+![](../lecciones/img/16/motivacion.png)
+
+Para que un LTS satisfaga una fórmula LTL, todas sus trazas deben satisfacerlo,
+pero las trazas de estos dos *son iguales*. Nunca vamos a poder escribir una
+fórmula que la distinga.
+
+### Árbol de cómputo
+
+En vez de mirar los caminos, vamos a pensarlo como que representa un árbol de
+cómputo. desdoblar los loops para hacer un árbol infinitamente profundo
+
+![](../lecciones/img/16/comp-tree.png)
+
+lo que hace que sea relevante, es que una noción de **bisimulación** es que los
+árboles de cómputo sean isomorfos.
+
+### CTL (Computational Tree Logic)
+
+Cuantificamos sobre caminos en el árbol de cómputo, con los mismos 4 operadores
+temporales: X, F, G, U (F G y U sobre estados)
+
+> F (**F**inally): <> y G (**G**lobally): []
+
+Los anteponemos siempre uno de los dos cuantificadores de caminos:
+
+- A: para todo camino. (**a**ll)
+- E: existe un camino. (**e**xists)
+
+En CTL se combina A y E con los operadores, quedando: Operadores temporales:
+
+- AG, AF, AU, AX
+- EG, EF, EU, EX
+
+Ejemplos (ilustrados en las diapos):
+
+- AG p: en todos los caminos, y en todos los estados de cada camino, vale p.
+- AF p: para todo camino, existe un estado en donde vale p
+- AX p: En el estado inicial, para todos los caminos, en el proximo estado vale p.
+- p AU q: en todos los caminos vale que en ese camino vale p U q (vale P hasta
+  que vale q)
+- EG p: Existe un camino en donde en todos los estados vale p
+- EF p: existe un camino en el árbol en donde vale F p (que en algún lado de ese
+  camino vale p)
+- EX p: existe un camino arrancando del inicial en donde en el proximo vale p
+- p EU q: existe un camino en donde vale p U q.
