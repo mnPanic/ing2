@@ -222,7 +222,6 @@ imitar. Entonces no son bisimilares.
 (P0, Q0), (P1, Q1), (P0, Q2)
 no. Para (P0, Q2) -a> (P1, Q0) que no están relacionados
 
-
 (P0, Q0),  (P0, Q2), (P0, Q1)
 
 no. Para (P0, Q0) -a> (P1, Q1) que no están relacionados

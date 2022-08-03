@@ -104,7 +104,7 @@ Cuestiones a resolver:
   - Manualmente
 
 - Que función de fitness usamos? Como la evaluamos?
-  - La func de fitness responde si un individuo es mejorq ue otra.
+  - La func de fitness responde si un individuo es mejor que otro.
   - Determina el espacio de búsqueda o *fitness landscape*
 
   Cómo sabemos que tan cerca está un input de cumplir con un predicado? Podemos
@@ -132,8 +132,7 @@ Cuestiones a resolver:
 - Que func uso para seleccionar padres?
 
   - **Roulette wheel selection**: la proba de elegir un individuo es
-  - proporcional al
-    valor de su función de fitness.
+    proporcional al valor de su función de fitness.
     - Problema: aumenta excesivamente la proba de elegir los que sean bien
       rankeados.
   
@@ -142,11 +141,11 @@ Cuestiones a resolver:
     que el segundo o solo 0.0001% mejor. Es el preferible en la práctica
 
   - **Tournament selection**. Tenemos un torneo de tamaño N, selecciono N
-    aleatoriamente y el mejor es eleccionado. El tamaño define la presión
+    aleatoriamente y el mejor es seleccionado. El tamaño define la presión
     selectiva.
 
     Nos permite que un individuo con mala fitness aún puede ganar con cierta
-    probabilidad.
+    probabilidad (el peor sería elegido con sí mismo)
 
 - Como creo hijos? Cross over, operadores de mutación?
 
@@ -218,11 +217,12 @@ solamente usado para generar datos de test y luego **descartado**.
 
 ![](img/10/flag-problem.png)
 
-- Flag level 1: no se modifica la variable, se puede reemplazar con una constante
-- Flag level 2: se modifica la variable entre la def y el if. Ahí introducimos
+- Flag level 1: no se modifica la variable, se puede reemplazar con una
+  constante
+- Level 2: se modifica la variable entre la def y el if. Ahí introducimos
   variables temporales (transformando en level 1) y luego reemplazamos.
-- Flag level 3: la bandera misma se va modificando
-- level 4: Secuencia de flags con condicionales
+- Level 3: la bandera misma se va modificando
+- Level 4: Secuencia de flags con condicionales
 - Level 5: Definición de flags en diferentes loop bodies
 
 Acá cuenta un poco como mejorar ciertas expresiones para que puedan ser

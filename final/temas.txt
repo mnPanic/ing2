@@ -1,0 +1,27 @@
+Temas a alto nivel que entraron en los parciales
+
+Parte 1
+
+- Dataflow analysis: reaching def, very busy, available expr, live vars
+- Pointer analysis
+- Mutation testing
+- Generacion automática de tests
+  - Korat (systematic testing)
+  - Randoop (feedback directed random testing)
+- DSE
+
+Parte 2
+
+- Modelado
+  - LTS
+  - FSP
+- Bisimulación
+  - Fuerte, débil
+  - Juego
+  - Algoritmo de clausura
+- Análisis de sistemas concurrentes
+  - Propiedades de safety, liveness
+  - Observadores de Propiedades
+  - Fair choice, action priority
+- LTL, Model checking
+- CTL, Model checking CTL

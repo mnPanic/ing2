@@ -80,13 +80,13 @@ t.state == 1
 como hay un solo constraint, depth 1
 
 ```
-// thread 1
-p = null;
+   // thread 1
+1: p = null;
 
-// thread 2
-if (p != null) {
-  p.close();
-}
+   // thread 2
+1: if (p != null) {
+2:   p.close();
+   }
 ```
 
 bug depth 2 (porque thread 1 antes de 2.1 y 2.2 después de 1).
