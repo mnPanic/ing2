@@ -1,5 +1,38 @@
 # Resumen final ing2 - Parte 2, sistemas concurrentes
 
+- [Modelado](#modelado)
+  - [LTS](#lts)
+  - [FSP](#fsp)
+    - [Composición paralela](#composición-paralela)
+    - [Syntactic sugar](#syntactic-sugar)
+- [Bisimulación](#bisimulación)
+  - [Bisimulación fuerte](#bisimulación-fuerte)
+  - [Juego de bisimulación fuerte](#juego-de-bisimulación-fuerte) 
+  - [Algoritmo (análisis) de bisimulación](#algoritmo-análisis-de-bisimulación)
+  - [Bisimulación débil](#bisimulación-débil)
+  - [Equivalencias](#equivalencias)
+  - [Minimización](#minimización)
+- [Análisis de sistemas concurrentes](#análisis-de-sistemas-concurrentes)
+  - [Análisis de modelos formales](#análisis-de-modelos-formales)
+  - [Estados de error](#estados-de-error)
+  - [Propiedades de safety y liveness](#propiedades-de-safety-y-liveness)
+  - [Observadores de propiedades](#observadores-de-propiedades)
+  - [Progreso](#progreso)
+    - [Fair choice](#fair-choice)
+    - [Análisis de progreso](#análisis-de-progreso)
+  - [Action priority](#action-priority)
+- [LTL](#ltl)
+  - [Model checking LTL](#model-checking-ltl)
+    - [Autómatas de Buchi](#autómatas-de-buchi)
+    - [LTL to buchi](#ltl-to-buchi)
+    - [gbuchi to buchi](#gbuchi-to-buchi)
+    - [LTS to buchi](#lts-to-buchi)
+    - [Producto de buchis](#producto-de-buchis)
+    - [Chequeo de vacuidad de un lenguaje](#chequeo-de-vacuidad-de-un-lenguaje)
+- [CTL](#ctl)
+  - [Árbol de cómputo](#árbol-de-cómputo)
+  - [CTL (Computational Tree Logic)](#ctl-computational-tree-logic)
+
 ## Modelado
 
 Queremos modelar **sistemas concurrentes**, con multiples threads. Nos interesa
