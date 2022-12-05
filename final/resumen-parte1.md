@@ -400,7 +400,7 @@ Donde,
 
 - **HOM** (Higher Order Mutant)
   - Es una mutación de otra mutación
-  - #HOM = $2^{\#FOM} - 1$
+  - #HOM = $2^{\\#FOM} - 1$
 
 #### Mutantes equivalentes
 
